@@ -1,0 +1,178 @@
+body {
+  margin: 0;
+  font-family: Arial;
+  background: url("https://images5.alphacoders.com/111/1112153.jpg") no-repeat center center fixed;
+  background-size: cover;
+  color: #ddd;
+}
+
+/* DARK OVERLAY */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: -1;
+}
+
+/* APP */
+.app {
+  display: flex;
+  gap: 15px;
+  padding: 20px;
+  align-items: flex-start;
+}
+
+/* LEFT PANEL */
+.ui {
+  width: 280px;
+  position: sticky;
+  top: 20px;
+}
+
+.topbar {
+  background: rgba(10,10,20,0.95);
+  padding: 12px;
+  font-weight: bold;
+  text-align: center;
+  border-radius: 6px 6px 0 0;
+}
+
+.panel {
+  background: rgba(10,10,20,0.95);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-radius: 0 0 6px 6px;
+}
+
+/* INPUTS */
+input, select {
+  width: 100%;
+  padding: 10px;
+  background: #151622;
+  border: 1px solid #2a2b3a;
+  color: white;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+/* BUTTONS */
+button {
+  width: 100%;
+  padding: 10px;
+  background: #2b2f4a;
+  border: 1px solid #3a3f66;
+  color: white;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: 0.2s;
+}
+
+button:hover {
+  background: #3a3f66;
+}
+
+.divider {
+  height: 1px;
+  background: #222;
+  margin: 5px 0;
+}
+
+/* RAIDS */
+.raidContainer {
+  display: grid;
+  grid-template-columns: repeat(2, 300px);
+  gap: 12px;
+}
+
+/* FRAME */
+.raidFrame {
+  width: 300px;
+  background: rgba(10,10,20,0.95);
+  border-radius: 6px;
+  border: 1px solid #222;
+  overflow: hidden;
+}
+
+.frameHeader {
+  background: rgba(20,20,35,0.95);
+  padding: 8px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+/* GRID */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 5px;
+  padding: 8px;
+}
+
+/* UNIT */
+.unit {
+  background: rgba(20,20,35,0.95);
+  border: 1px solid #222;
+  padding: 8px;
+  font-size: 11px;
+  border-radius: 4px;
+  position: relative;
+  min-height: 40px;
+}
+
+/* REMOVE BUTTON MELHORADO */
+.removeBtn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 18px;
+  height: 18px;
+  font-size: 11px;
+  border: none;
+  border-radius: 3px;
+  background: #b30000;
+  color: white;
+  cursor: pointer;
+}
+
+.removeBtn:hover {
+  background: #ff0000;
+}
+
+/* ROLES */
+.tank { border-left: 3px solid #3aa0ff; }
+.dps { border-left: 3px solid #ff4b4b; }
+.healer { border-left: 3px solid #3cff8f; }
+
+/* =======================
+   MOBILE VERSION
+======================= */
+@media (max-width: 900px) {
+
+  .app {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .ui {
+    width: 95%;
+    position: relative;
+    top: 0;
+  }
+
+  .raidContainer {
+    grid-template-columns: 1fr;
+    width: 95%;
+  }
+
+  .raidFrame {
+    width: 100%;
+  }
+
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Raid Manager ElvUI</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="app">
+
+  <!-- LEFT PANEL -->
+  <div class="ui">
+
+    <div class="topbar">⚔️ Raid Manager</div>
+
+    <div class="panel">
+
+      <input id="playerName" placeholder="Nome do Player">
+
+      <select id="playerClass" onchange="updateSpecs()">
+        <option>Paladino</option>
+        <option>Warrior</option>
+        <option>Cavaleiro da Morte</option>
+        <option>Rogue</option>
+        <option>Hunter</option>
+        <option>Druida</option>
+        <option>Mago</option>
+        <option>Shaman</option>
+        <option>Priest</option>
+        <option>Warlock</option>
+      </select>
+
+      <select id="playerSpec"></select>
+
+      <select id="raidSelect">
+        <option value="naxx">Naxxramas</option>
+        <option value="ulduar">Ulduar</option>
+        <option value="toc">ToC</option>
+        <option value="icc">ICC</option>
+      </select>
+
+      <button onclick="addPlayer()">Adicionar Player</button>
+
+      <div class="divider"></div>
+
+      <select id="raidTimeSelect">
+        <option value="naxx">Naxxramas</option>
+        <option value="ulduar">Ulduar</option>
+        <option value="toc">ToC</option>
+        <option value="icc">ICC</option>
+      </select>
+
+      <input type="time" id="raidTimeInput">
+      <input type="date" id="raidDateInput">
+
+      <button onclick="setRaidTime()">Definir Raid</button>
+
+    </div>
+
+  </div>
+
+  <!-- RAIDS -->
+  <div class="raidContainer">
+
+    <div class="raidFrame">
+      <div class="frameHeader">
+        Naxxramas <span id="naxxTime"></span>
+      </div>
+      <div class="grid"
+           id="naxxGrid"
+           ondragover="allowDrop(event)"
+           ondrop="dropPlayer('naxx')">
+      </div>
+    </div>
+
+    <div class="raidFrame">
+      <div class="frameHeader">
+        Ulduar <span id="ulduarTime"></span>
+      </div>
+      <div class="grid"
+           id="ulduarGrid"
+           ondragover="allowDrop(event)"
+           ondrop="dropPlayer('ulduar')">
+      </div>
+    </div>
+
+    <div class="raidFrame">
+      <div class="frameHeader">
+        ToC <span id="tocTime"></span>
+      </div>
+      <div class="grid"
+           id="tocGrid"
+           ondragover="allowDrop(event)"
+           ondrop="dropPlayer('toc')">
+      </div>
+    </div>
+
+    <div class="raidFrame">
+      <div class="frameHeader">
+        ICC <span id="iccTime"></span>
+      </div>
+      <div class="grid"
+           id="iccGrid"
+           ondragover="allowDrop(event)"
+           ondrop="dropPlayer('icc')">
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
