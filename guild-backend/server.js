@@ -1,11 +1,17 @@
 const express = require("express");
 const app = express();
 const http = require("http").createServer(app);
+
 const io = require("socket.io")(http, {
-  cors: { origin: "*" }
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"]
+  }
 });
 
-app.use(express.json());
+app.get("/", (req, res) => {
+  res.send("Guild Backend Online");
+});
 
 let raids = {
   naxx: [],
@@ -35,8 +41,12 @@ io.on("connection", (socket) => {
     raidTime = data;
     io.emit("raidTimeUpdated", raidTime);
   });
+
+  socket.on("disconnect", () => {
+    console.log("Cliente desconectado:", socket.id);
+  });
 });
 
-http.listen(3000, () => {
-  console.log("Servidor rodando em http://localhost:3000");
+http.listen(process.env.PORT || 3000, () => {
+  console.log("Servidor rodando");
 });
