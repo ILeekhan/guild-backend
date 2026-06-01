@@ -261,6 +261,12 @@ function render(name) {
     const role =
       p.spec === "Tank" ? "tank" :
       p.spec === "DPS" ? "dps" : "healer";
+    const roleShort =
+      role === "tank" ? "T" :
+      role === "healer" ? "H" : "D";
+    const roleLabel =
+      role === "tank" ? "Tank" :
+      role === "healer" ? "Heal" : "DPS";
 
     grid.insertAdjacentHTML(
       "beforeend",
@@ -273,8 +279,13 @@ function render(name) {
 
         <button class="removeBtn" onclick="removePlayer('${name}',${i})" aria-label="Remover player">&times;</button>
 
-        ${escapeHtml(p.name)}<br>
-        <small>${escapeHtml(p.cls)} - ${escapeHtml(p.spec)}</small>
+        <div class="playerRow">
+          <span class="roleSprite ${role}" title="${roleLabel}" aria-label="${roleLabel}">${roleShort}</span>
+          <div class="playerInfo">
+            <strong class="playerName">${escapeHtml(p.name)}</strong>
+            <small class="playerMeta">${escapeHtml(p.cls)} - ${escapeHtml(p.spec)}</small>
+          </div>
+        </div>
       </div>
     `
     );

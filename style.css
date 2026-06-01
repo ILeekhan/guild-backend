@@ -1,6 +1,6 @@
 body {
   margin: 0;
-  font-family: Arial;
+  font-family: "Segoe UI", Arial, sans-serif;
   background: url("https://images5.alphacoders.com/111/1112153.jpg") no-repeat center center fixed;
   background-size: cover;
   color: #ddd;
@@ -18,56 +18,61 @@ body::before {
 /* APP */
 .app {
   display: flex;
-  gap: 15px;
-  padding: 20px;
+  gap: 22px;
+  padding: 24px;
   align-items: flex-start;
 }
 
 /* LEFT PANEL */
 .ui {
-  width: 280px;
+  width: 310px;
   position: sticky;
   top: 20px;
 }
 
 .topbar {
   background: rgba(10,10,20,0.95);
-  padding: 12px;
-  font-weight: bold;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 700;
   text-align: center;
   border-radius: 6px 6px 0 0;
+  letter-spacing: 0;
 }
 
 .panel {
   background: rgba(10,10,20,0.95);
-  padding: 12px;
+  padding: 14px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   border-radius: 0 0 6px 6px;
 }
 
 /* INPUTS */
 input, select {
   width: 100%;
-  padding: 10px;
+  padding: 11px;
   background: #151622;
   border: 1px solid #2a2b3a;
   color: white;
   border-radius: 4px;
   box-sizing: border-box;
+  font-size: 14px;
 }
 
 /* BUTTONS */
 button {
   width: 100%;
-  padding: 10px;
+  padding: 11px;
   background: #2b2f4a;
   border: 1px solid #3a3f66;
   color: white;
   cursor: pointer;
   border-radius: 4px;
   transition: 0.2s;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 button:hover {
@@ -83,13 +88,15 @@ button:hover {
 /* RAIDS */
 .raidContainer {
   display: grid;
-  grid-template-columns: repeat(2, 300px);
-  gap: 12px;
+  grid-template-columns: repeat(2, minmax(390px, 1fr));
+  gap: 18px;
+  flex: 1;
+  max-width: 980px;
 }
 
 /* FRAME */
 .raidFrame {
-  width: 300px;
+  width: 100%;
   background: rgba(10,10,20,0.95);
   border-radius: 6px;
   border: 1px solid #222;
@@ -98,29 +105,94 @@ button:hover {
 
 .frameHeader {
   background: rgba(20,20,35,0.95);
-  padding: 8px;
+  padding: 11px 12px;
   display: flex;
   justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #f1f4ff;
+  line-height: 1.35;
+}
+
+.frameHeader span {
+  color: #c9d2ff;
   font-size: 12px;
+  font-weight: 600;
+  text-align: right;
 }
 
 /* GRID */
 .grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 5px;
-  padding: 8px;
+  gap: 9px;
+  padding: 11px;
 }
 
 /* UNIT */
 .unit {
   background: rgba(20,20,35,0.95);
   border: 1px solid #222;
-  padding: 8px;
-  font-size: 11px;
+  padding: 10px 34px 10px 10px;
+  font-size: 12px;
   border-radius: 4px;
   position: relative;
-  min-height: 40px;
+  min-height: 58px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.unit.empty {
+  color: #6f789d;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.playerRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.playerInfo {
+  min-width: 0;
+}
+
+.playerName {
+  display: block;
+  color: #ffffff;
+  font-size: 13px;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.playerMeta {
+  display: block;
+  margin-top: 3px;
+  color: #b8c2ea;
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+.roleSprite {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  border: 1px solid rgba(255,255,255,0.18);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.35);
 }
 
 /* REMOVE BUTTON MELHORADO */
@@ -143,9 +215,13 @@ button:hover {
 }
 
 /* ROLES */
-.tank { border-left: 3px solid #3aa0ff; }
-.dps { border-left: 3px solid #ff4b4b; }
-.healer { border-left: 3px solid #3cff8f; }
+.unit.tank { border-left: 4px solid #3aa0ff; }
+.unit.dps { border-left: 4px solid #ff4b4b; }
+.unit.healer { border-left: 4px solid #3cff8f; }
+
+.roleSprite.tank { background: #2567c8; }
+.roleSprite.dps { background: #b92632; }
+.roleSprite.healer { background: #16844c; }
 
 /* =======================
    MOBILE VERSION
