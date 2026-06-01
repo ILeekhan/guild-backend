@@ -79,6 +79,16 @@ button:hover {
   background: #3a3f66;
 }
 
+.secondaryBtn {
+  background: #221820;
+  border-color: #493044;
+  color: #f0c7d8;
+}
+
+.secondaryBtn:hover {
+  background: #3a2234;
+}
+
 .divider {
   height: 1px;
   background: #222;
@@ -87,11 +97,90 @@ button:hover {
 
 /* RAIDS */
 .raidContainer {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(390px, 1fr));
-  gap: 18px;
   flex: 1;
-  max-width: 980px;
+  max-width: 1080px;
+}
+
+.raidBoard {
+  width: 100%;
+}
+
+.raidTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.raidTab {
+  width: auto;
+  min-width: 170px;
+  max-width: 245px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  text-align: left;
+  background: rgba(10,10,20,0.95);
+  border: 1px solid #2f334d;
+}
+
+.raidTab.active {
+  border-color: #8ea4ff;
+  background: rgba(37,45,82,0.96);
+}
+
+.raidTabText {
+  min-width: 0;
+}
+
+.raidTabText strong,
+.raidTabText small {
+  display: block;
+}
+
+.raidTabText strong {
+  color: #fff;
+  font-size: 13px;
+}
+
+.raidTabText small {
+  color: #bcc5ee;
+  font-size: 11px;
+  line-height: 1.25;
+  margin-top: 2px;
+}
+
+.raidIcon {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background: #31364d;
+  color: #fff;
+  font-weight: 800;
+  font-size: 13px;
+  border: 1px solid rgba(255,255,255,0.18);
+}
+
+.raidIcon.raid-naxx { background: #345b8c; }
+.raidIcon.raid-ulduar { background: #7b6730; }
+.raidIcon.raid-toc { background: #7b3d53; }
+.raidIcon.raid-icc { background: #38436f; }
+
+.emptyState {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 18px;
+  color: #9fa8cd;
+  background: rgba(10,10,20,0.85);
+  border: 1px dashed #34364c;
+  border-radius: 4px;
+  font-size: 13px;
+  text-align: center;
 }
 
 /* FRAME */
@@ -101,6 +190,10 @@ button:hover {
   border-radius: 6px;
   border: 1px solid #222;
   overflow: hidden;
+}
+
+.singleRaid {
+  min-height: 420px;
 }
 
 .frameHeader {
@@ -115,6 +208,13 @@ button:hover {
   line-height: 1.35;
 }
 
+.frameTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 150px;
+}
+
 .frameHeader span {
   color: #c9d2ff;
   font-size: 12px;
@@ -125,9 +225,16 @@ button:hover {
 /* GRID */
 .grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
   gap: 9px;
   padding: 11px;
+}
+
+.grid.raid10 {
+  grid-template-columns: repeat(2, minmax(240px, 1fr));
+}
+
+.grid.raid25 {
+  grid-template-columns: repeat(5, minmax(145px, 1fr));
 }
 
 /* UNIT */
@@ -240,7 +347,6 @@ button:hover {
   }
 
   .raidContainer {
-    grid-template-columns: 1fr;
     width: 95%;
   }
 
@@ -250,5 +356,23 @@ button:hover {
 
   .grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 1100px) {
+  .grid.raid25 {
+    grid-template-columns: repeat(3, minmax(170px, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .raidTab {
+    width: 100%;
+    max-width: none;
+  }
+
+  .grid.raid10,
+  .grid.raid25 {
+    grid-template-columns: 1fr;
   }
 }

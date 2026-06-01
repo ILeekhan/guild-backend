@@ -13,12 +13,12 @@ const io = require("socket.io")(http, {
 });
 
 const RAID_KEYS = ["naxx", "ulduar", "toc", "icc"];
-const MAX_PLAYERS_PER_RAID = 25;
+const RAID_SIZES = [10, 25];
 const STATE_FILE = path.join(__dirname, "raid-state.json");
 
 const defaultState = {
-  raids: createEmptyRaids(),
-  raidTime: createDefaultRaidTime()
+  raidEvents: [],
+  selectedRaidId: null
 };
 
 let state = loadState();
@@ -39,16 +39,22 @@ io.on("connection", (socket) => {
 
   socket.emit("init", state);
 
-  socket.on("updateRaids", (data) => {
-    state.raids = normalizeRaids(data);
+  socket.on("updateRaidEvents", (data) => {
+    state = normalizeState(data);
     saveState();
-    io.emit("raidsUpdated", state.raids);
+    io.emit("raidEventsUpdated", state);
+  });
+
+  socket.on("updateRaids", (data) => {
+    state = normalizeState({ raids: data });
+    saveState();
+    io.emit("raidEventsUpdated", state);
   });
 
   socket.on("updateRaidTime", (data) => {
-    state.raidTime = normalizeRaidTime(data);
+    state = normalizeState({ raidTime: data });
     saveState();
-    io.emit("raidTimeUpdated", state.raidTime);
+    io.emit("raidEventsUpdated", state);
   });
 
   socket.on("disconnect", () => {
@@ -59,20 +65,6 @@ io.on("connection", (socket) => {
 http.listen(process.env.PORT || 3000, () => {
   console.log("Servidor rodando");
 });
-
-function createEmptyRaids() {
-  return RAID_KEYS.reduce((acc, key) => {
-    acc[key] = [];
-    return acc;
-  }, {});
-}
-
-function createDefaultRaidTime() {
-  return RAID_KEYS.reduce((acc, key) => {
-    acc[key] = { time: "20:00", date: "" };
-    return acc;
-  }, {});
-}
 
 function loadState() {
   try {
@@ -89,31 +81,87 @@ function loadState() {
 }
 
 function saveState() {
-  const normalizedState = normalizeState(state);
-  state = normalizedState;
-  fs.writeFileSync(STATE_FILE, JSON.stringify(normalizedState, null, 2));
+  state = normalizeState(state);
+  fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2));
 }
 
 function normalizeState(nextState) {
+  const events = Array.isArray(nextState?.raidEvents)
+    ? normalizeRaidEvents(nextState.raidEvents)
+    : migrateLegacyRaids(nextState);
+  const selectedId = events.some((event) => event.id === nextState?.selectedRaidId)
+    ? nextState.selectedRaidId
+    : events[0]?.id || null;
+
   return {
-    raids: normalizeRaids(nextState?.raids),
-    raidTime: normalizeRaidTime(nextState?.raidTime)
+    raidEvents: events,
+    selectedRaidId: selectedId
   };
 }
 
-function normalizeRaids(nextRaids) {
-  const normalized = createEmptyRaids();
+function normalizeRaidEvents(nextEvents) {
+  const usedIds = new Set();
 
-  RAID_KEYS.forEach((raidKey) => {
-    const players = Array.isArray(nextRaids?.[raidKey]) ? nextRaids[raidKey] : [];
+  return nextEvents
+    .map((event, index) => normalizeRaidEvent(event, index))
+    .filter(Boolean)
+    .map((event, index) => {
+      let id = event.id;
+      while (usedIds.has(id)) {
+        id = `${event.id}-${index + 1}`;
+      }
+      usedIds.add(id);
+      return { ...event, id };
+    });
+}
 
-    normalized[raidKey] = players
+function normalizeRaidEvent(event, index = 0) {
+  const raidKey = RAID_KEYS.includes(event?.raidKey) ? event.raidKey : "";
+  if (!raidKey) return null;
+
+  const size = normalizeRaidSize(event?.size);
+  const date = String(event?.date || "").trim();
+  const time = String(event?.time || "20:00").trim() || "20:00";
+  const players = Array.isArray(event?.players) ? event.players : [];
+  const id = String(event?.id || createRaidId(raidKey, date, time, index)).trim();
+
+  return {
+    id,
+    raidKey,
+    size,
+    date,
+    time,
+    players: players
       .map(normalizePlayer)
       .filter(Boolean)
-      .slice(0, MAX_PLAYERS_PER_RAID);
-  });
+      .slice(0, size)
+  };
+}
 
-  return normalized;
+function migrateLegacyRaids(nextState) {
+  const legacyRaids = nextState?.raids || {};
+  const legacyRaidTime = nextState?.raidTime || {};
+
+  return RAID_KEYS.flatMap((raidKey) => {
+    const players = Array.isArray(legacyRaids?.[raidKey]) ? legacyRaids[raidKey] : [];
+    const time = String(legacyRaidTime?.[raidKey]?.time || "20:00").trim() || "20:00";
+    const date = String(legacyRaidTime?.[raidKey]?.date || "").trim();
+    const shouldCreateEvent =
+      players.length > 0 ||
+      Boolean(date) ||
+      (time && time !== "20:00");
+
+    if (!shouldCreateEvent) return [];
+
+    return normalizeRaidEvent({
+      id: createRaidId(raidKey, date, time),
+      raidKey,
+      size: players.length > 10 ? 25 : 10,
+      date: date === "01-01" ? "" : date,
+      time,
+      players
+    });
+  });
 }
 
 function normalizePlayer(player) {
@@ -126,20 +174,16 @@ function normalizePlayer(player) {
   return { name, cls, spec };
 }
 
-function normalizeRaidTime(nextRaidTime) {
-  const normalized = createDefaultRaidTime();
+function normalizeRaidSize(size) {
+  const nextSize = Number(size);
+  return RAID_SIZES.includes(nextSize) ? nextSize : 10;
+}
 
-  RAID_KEYS.forEach((raidKey) => {
-    const time = String(nextRaidTime?.[raidKey]?.time || normalized[raidKey].time).trim();
-    const date = String(nextRaidTime?.[raidKey]?.date || "").trim();
-
-    normalized[raidKey] = {
-      time: time || "20:00",
-      date: date === "01-01" ? "" : date
-    };
-  });
-
-  return normalized;
+function createRaidId(raidKey, date, time, index = Date.now()) {
+  return `${raidKey}-${date || "sem-data"}-${time || "sem-hora"}-${index}`
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, "-")
+    .replace(/-+/g, "-");
 }
 
 function clone(value) {

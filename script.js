@@ -9,11 +9,18 @@ const socket = io(socketUrl, {
 });
 
 const RAID_KEYS = ["naxx", "ulduar", "toc", "icc"];
-const MAX_PLAYERS_PER_RAID = 25;
 const STORAGE_KEY = "raidManagerState";
+const RAID_SIZES = [10, 25];
 
-let raids = createEmptyRaids();
-let raidTime = createDefaultRaidTime();
+const raidInfo = {
+  naxx: { name: "Naxxramas", icon: "NX" },
+  ulduar: { name: "Ulduar", icon: "UL" },
+  toc: { name: "ToC", icon: "TC" },
+  icc: { name: "ICC", icon: "IC" }
+};
+
+let raidEvents = [];
+let selectedRaidId = null;
 let dragData = null;
 let receivedServerState = false;
 
@@ -37,9 +44,10 @@ const specs = {
 updateSpecs();
 loadFromLocalStorage();
 renderAll();
-syncRaidTimeForm();
 
-document.getElementById("raidTimeSelect").addEventListener("change", syncRaidTimeForm);
+document.getElementById("eventSelect").addEventListener("change", (event) => {
+  selectRaidEvent(event.target.value);
+});
 
 /* =========================
    SOCKET SYNC
@@ -51,9 +59,9 @@ socket.on("init", (data) => {
   const serverState = normalizeState(data);
   const localState = readLocalState();
   const shouldRestoreLocalData =
-    !hasPlayers(serverState.raids) &&
+    !hasEvents(serverState) &&
     localState &&
-    hasPlayers(localState.raids);
+    hasEvents(localState);
 
   if (shouldRestoreLocalData) {
     applyState(localState);
@@ -64,17 +72,16 @@ socket.on("init", (data) => {
   applyState(serverState);
 });
 
+socket.on("raidEventsUpdated", (data) => {
+  applyState(data);
+});
+
 socket.on("raidsUpdated", (data) => {
-  raids = normalizeRaids(data);
-  persistState();
-  renderAll();
+  applyState({ raids: data });
 });
 
 socket.on("raidTimeUpdated", (data) => {
-  raidTime = normalizeRaidTime(data);
-  persistState();
-  renderAll();
-  syncRaidTimeForm();
+  applyState({ raidTime: data });
 });
 
 socket.on("connect_error", () => {
@@ -101,29 +108,105 @@ function updateSpecs() {
 }
 
 /* =========================
+   RAID EVENTS
+========================= */
+
+function createRaidEvent() {
+  const raidKey = document.getElementById("raidTimeSelect").value;
+  const size = Number(document.getElementById("raidSizeSelect").value);
+  const time = document.getElementById("raidTimeInput").value;
+  const date = document.getElementById("raidDateInput").value;
+
+  if (!time || !date) {
+    alert("Informe o dia e a hora da raid.");
+    return;
+  }
+
+  const existingEvent = raidEvents.find(
+    (event) => event.raidKey === raidKey && event.date === date && event.time === time
+  );
+
+  if (existingEvent) {
+    if (existingEvent.players.length > size) {
+      alert("Essa raid ja tem mais players do que o tamanho escolhido.");
+      return;
+    }
+
+    existingEvent.size = size;
+    selectedRaidId = existingEvent.id;
+    sync();
+    return;
+  }
+
+  const event = {
+    id: createRaidId(raidKey, date, time),
+    raidKey,
+    size: normalizeRaidSize(size),
+    date,
+    time,
+    players: []
+  };
+
+  raidEvents.push(event);
+  selectedRaidId = event.id;
+  sync();
+}
+
+function selectRaidEvent(id) {
+  selectedRaidId = id || null;
+  sync(false);
+  syncRaidEventForm();
+}
+
+function deleteSelectedRaid() {
+  const event = getSelectedEvent();
+  if (!event) return;
+
+  const label = getEventLabel(event);
+  if (!confirm(`Excluir a raid ${label}?`)) return;
+
+  raidEvents = raidEvents.filter((raidEvent) => raidEvent.id !== event.id);
+  selectedRaidId = raidEvents[0]?.id || null;
+  sync();
+}
+
+function syncRaidEventForm() {
+  const event = getSelectedEvent();
+  if (!event) return;
+
+  document.getElementById("raidTimeSelect").value = event.raidKey;
+  document.getElementById("raidSizeSelect").value = String(event.size);
+  document.getElementById("raidTimeInput").value = event.time;
+  document.getElementById("raidDateInput").value = event.date;
+}
+
+/* =========================
    ADD PLAYER
 ========================= */
 
 function addPlayer() {
+  const event = getSelectedEvent();
   const nameInput = document.getElementById("playerName");
   const name = nameInput.value.trim();
   const cls = document.getElementById("playerClass").value;
   const spec = document.getElementById("playerSpec").value;
-  const raid = document.getElementById("raidSelect").value;
+
+  if (!event) {
+    alert("Crie ou selecione uma raid primeiro.");
+    return;
+  }
 
   if (!name) {
     alert("Informe o nome do player.");
     return;
   }
 
-  if (!raids[raid]) raids[raid] = [];
-
-  if (raids[raid].length >= MAX_PLAYERS_PER_RAID) {
+  if (event.players.length >= event.size) {
     alert("Esta raid esta cheia.");
     return;
   }
 
-  const alreadySigned = raids[raid].some(
+  const alreadySigned = event.players.some(
     (player) => normalizeName(player.name) === normalizeName(name)
   );
 
@@ -132,7 +215,7 @@ function addPlayer() {
     return;
   }
 
-  raids[raid].push({ name, cls, spec });
+  event.players.push({ name, cls, spec });
   nameInput.value = "";
 
   sync();
@@ -142,8 +225,11 @@ function addPlayer() {
    REMOVE PLAYER
 ========================= */
 
-function removePlayer(raid, index) {
-  raids[raid].splice(index, 1);
+function removePlayer(eventId, index) {
+  const event = getEventById(eventId);
+  if (!event) return;
+
+  event.players.splice(index, 1);
   sync();
 }
 
@@ -151,29 +237,30 @@ function removePlayer(raid, index) {
    DRAG & DROP
 ========================= */
 
-function dragStart(raid, index) {
-  dragData = { raid, index };
+function dragStart(eventId, index) {
+  dragData = { eventId, index };
 }
 
 function allowDrop(e) {
   e.preventDefault();
 }
 
-function dropPlayer(targetRaid, targetIndex = null) {
+function dropPlayer(targetEventId, targetIndex = null) {
   if (!dragData) return;
 
-  const sourceRaid = dragData.raid;
+  const sourceEvent = getEventById(dragData.eventId);
+  const targetEvent = getEventById(targetEventId);
   const sourceIndex = dragData.index;
-  const player = raids[sourceRaid]?.[sourceIndex];
+  const player = sourceEvent?.players[sourceIndex];
 
-  if (!player) {
+  if (!sourceEvent || !targetEvent || !player) {
     dragData = null;
     return;
   }
 
   if (
-    sourceRaid !== targetRaid &&
-    raids[targetRaid].length >= MAX_PLAYERS_PER_RAID
+    sourceEvent.id !== targetEvent.id &&
+    targetEvent.players.length >= targetEvent.size
   ) {
     alert("Esta raid esta cheia.");
     dragData = null;
@@ -181,17 +268,17 @@ function dropPlayer(targetRaid, targetIndex = null) {
     return;
   }
 
-  raids[sourceRaid].splice(sourceIndex, 1);
+  sourceEvent.players.splice(sourceIndex, 1);
 
   let insertIndex = targetIndex;
-  if (sourceRaid === targetRaid && targetIndex !== null && sourceIndex < targetIndex) {
+  if (sourceEvent.id === targetEvent.id && targetIndex !== null && sourceIndex < targetIndex) {
     insertIndex = targetIndex - 1;
   }
 
   if (insertIndex !== null) {
-    raids[targetRaid].splice(insertIndex, 0, player);
+    targetEvent.players.splice(insertIndex, 0, player);
   } else {
-    raids[targetRaid].push(player);
+    targetEvent.players.push(player);
   }
 
   dragData = null;
@@ -202,12 +289,12 @@ function dropPlayer(targetRaid, targetIndex = null) {
    RAID STATS
 ========================= */
 
-function getRoleCount(raid) {
+function getRoleCount(event) {
   let t = 0;
   let h = 0;
   let d = 0;
 
-  raids[raid].forEach((p) => {
+  event.players.forEach((p) => {
     if (p.spec === "Tank") t++;
     else if (p.spec === "Healer") h++;
     else d++;
@@ -216,10 +303,10 @@ function getRoleCount(raid) {
   return { t, h, d };
 }
 
-function validateRaid(raid) {
-  const c = getRoleCount(raid);
+function validateRaid(event) {
+  const c = getRoleCount(event);
 
-  if (raids[raid].length === 0) return "Aguardando players";
+  if (event.players.length === 0) return "Aguardando players";
   if (c.t === 0) return "Sem Tank";
   if (c.h === 0) return "Sem Healer";
   if (c.d < 3) return "DPS baixo";
@@ -231,19 +318,91 @@ function validateRaid(raid) {
 ========================= */
 
 function renderAll() {
-  RAID_KEYS.forEach(render);
+  ensureSelectedEvent();
+  renderEventSelect();
+  renderRaidTabs();
+  renderSelectedRaid();
 }
 
-function render(name) {
-  const grid = document.getElementById(name + "Grid");
+function renderEventSelect() {
+  const select = document.getElementById("eventSelect");
+  select.innerHTML = "";
+
+  if (raidEvents.length === 0) {
+    const option = document.createElement("option");
+    option.value = "";
+    option.textContent = "Crie uma raid";
+    select.appendChild(option);
+    return;
+  }
+
+  raidEvents.forEach((event) => {
+    const option = document.createElement("option");
+    option.value = event.id;
+    option.textContent = getEventLabel(event);
+    select.appendChild(option);
+  });
+
+  select.value = selectedRaidId || "";
+}
+
+function renderRaidTabs() {
+  const tabs = document.getElementById("raidTabs");
+  tabs.innerHTML = "";
+
+  if (raidEvents.length === 0) {
+    tabs.innerHTML = `<div class="emptyState">Crie uma raid para abrir o grid de jogadores.</div>`;
+    return;
+  }
+
+  raidEvents.forEach((event) => {
+    const active = event.id === selectedRaidId ? "active" : "";
+    const count = `${event.players.length}/${event.size}`;
+
+    tabs.insertAdjacentHTML(
+      "beforeend",
+      `
+      <button class="raidTab ${active} raid-${event.raidKey}" onclick="selectRaidEvent('${event.id}')">
+        <span class="raidIcon raid-${event.raidKey}">${getRaidIcon(event.raidKey)}</span>
+        <span class="raidTabText">
+          <strong>${escapeHtml(getRaidName(event.raidKey))}</strong>
+          <small>${escapeHtml(formatRaidTime(event))} | ${count}</small>
+        </span>
+      </button>
+    `
+    );
+  });
+}
+
+function renderSelectedRaid() {
+  const event = getSelectedEvent();
+  const title = document.getElementById("activeRaidTitle");
+  const meta = document.getElementById("activeRaidMeta");
+  const grid = document.getElementById("activeRaidGrid");
+
   grid.innerHTML = "";
 
-  const c = getRoleCount(name);
-  const status = validateRaid(name);
-  const slotsToRender = Math.max(10, raids[name].length + 1);
+  if (!event) {
+    title.innerHTML = `<span class="raidIcon">--</span><span>Raid</span>`;
+    meta.textContent = "Nenhuma raid selecionada";
+    grid.className = "grid";
+    grid.innerHTML = `<div class="emptyState">Crie uma raid com data, hora e tamanho para comecar.</div>`;
+    return;
+  }
 
-  for (let i = 0; i < Math.min(slotsToRender, MAX_PLAYERS_PER_RAID); i++) {
-    const p = raids[name][i];
+  const c = getRoleCount(event);
+  const status = validateRaid(event);
+  title.innerHTML = `
+    <span class="raidIcon raid-${event.raidKey}">${getRaidIcon(event.raidKey)}</span>
+    <span>${escapeHtml(getRaidName(event.raidKey))}</span>
+  `;
+  meta.innerHTML =
+    `${escapeHtml(formatRaidTime(event))} | ${event.players.length}/${event.size} | ` +
+    `T:${c.t} H:${c.h} DPS:${c.d} | ${escapeHtml(status)}`;
+  grid.className = `grid raid${event.size}`;
+
+  for (let i = 0; i < event.size; i++) {
+    const p = event.players[i];
 
     if (!p) {
       grid.insertAdjacentHTML(
@@ -251,8 +410,8 @@ function render(name) {
         `
         <div class="unit empty"
           ondragover="allowDrop(event)"
-          ondrop="dropPlayer('${name}',${i})">
-          Empty
+          ondrop="dropPlayer('${event.id}',${i})">
+          Slot ${i + 1}
         </div>`
       );
       continue;
@@ -273,11 +432,11 @@ function render(name) {
       `
       <div class="unit ${role}"
         draggable="true"
-        ondragstart="dragStart('${name}',${i})"
+        ondragstart="dragStart('${event.id}',${i})"
         ondragover="allowDrop(event)"
-        ondrop="dropPlayer('${name}',${i})">
+        ondrop="dropPlayer('${event.id}',${i})">
 
-        <button class="removeBtn" onclick="removePlayer('${name}',${i})" aria-label="Remover player">&times;</button>
+        <button class="removeBtn" onclick="removePlayer('${event.id}',${i})" aria-label="Remover player">&times;</button>
 
         <div class="playerRow">
           <span class="roleSprite ${role}" title="${roleLabel}" aria-label="${roleLabel}">${roleShort}</span>
@@ -290,83 +449,32 @@ function render(name) {
     `
     );
   }
-
-  document.getElementById(name + "Time").innerHTML =
-    `${formatRaidTime(name)} | ${raids[name].length}/${MAX_PLAYERS_PER_RAID} | ` +
-    `T:${c.t} H:${c.h} DPS:${c.d} | ${status}`;
-}
-
-/* =========================
-   RAID TIME
-========================= */
-
-function setRaidTime() {
-  const raid = document.getElementById("raidTimeSelect").value;
-  const time = document.getElementById("raidTimeInput").value;
-  const date = document.getElementById("raidDateInput").value;
-
-  if (!time || !date) {
-    alert("Informe o dia e a hora da raid.");
-    return;
-  }
-
-  raidTime[raid] = { time, date };
-
-  syncTime();
-}
-
-function syncRaidTimeForm() {
-  const raid = document.getElementById("raidTimeSelect").value;
-  document.getElementById("raidTimeInput").value = raidTime[raid]?.time || "20:00";
-  document.getElementById("raidDateInput").value = raidTime[raid]?.date || "";
-}
-
-function formatRaidTime(raid) {
-  const time = raidTime[raid]?.time || "20:00";
-  const date = raidTime[raid]?.date || "";
-
-  return `${time} - ${date ? formatDate(date) : "sem data"}`;
-}
-
-function formatDate(date) {
-  const parts = date.split("-");
-  if (parts.length !== 3) return date;
-
-  const [year, month, day] = parts;
-  return `${day}/${month}/${year}`;
 }
 
 /* =========================
    STATE
 ========================= */
 
-function sync() {
-  raids = normalizeRaids(raids);
+function sync(emit = true) {
+  const normalized = normalizeState({ raidEvents, selectedRaidId });
+  raidEvents = normalized.raidEvents;
+  selectedRaidId = normalized.selectedRaidId;
   persistState();
-  socket.emit("updateRaids", raids);
+  if (emit) emitState();
   renderAll();
-}
-
-function syncTime() {
-  raidTime = normalizeRaidTime(raidTime);
-  persistState();
-  socket.emit("updateRaidTime", raidTime);
-  renderAll();
-  syncRaidTimeForm();
 }
 
 function emitState() {
-  socket.emit("updateRaids", raids);
-  socket.emit("updateRaidTime", raidTime);
+  socket.emit("updateRaidEvents", { raidEvents, selectedRaidId });
 }
 
 function applyState(nextState) {
   const normalized = normalizeState(nextState);
-  raids = normalized.raids;
-  raidTime = normalized.raidTime;
+  raidEvents = normalized.raidEvents;
+  selectedRaidId = normalized.selectedRaidId;
   persistState();
   renderAll();
-  syncRaidTimeForm();
+  syncRaidEventForm();
 }
 
 function loadFromLocalStorage() {
@@ -399,32 +507,87 @@ function readLocalState() {
 }
 
 function persistState() {
-  const state = normalizeState({ raids, raidTime });
+  const state = normalizeState({ raidEvents, selectedRaidId });
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  localStorage.setItem("raids", JSON.stringify(state.raids));
-  localStorage.setItem("raidTime", JSON.stringify(state.raidTime));
 }
 
 function normalizeState(nextState) {
+  const events = Array.isArray(nextState?.raidEvents)
+    ? normalizeRaidEvents(nextState.raidEvents)
+    : migrateLegacyRaids(nextState);
+  const selectedId = events.some((event) => event.id === nextState?.selectedRaidId)
+    ? nextState.selectedRaidId
+    : events[0]?.id || null;
+
   return {
-    raids: normalizeRaids(nextState?.raids),
-    raidTime: normalizeRaidTime(nextState?.raidTime)
+    raidEvents: events,
+    selectedRaidId: selectedId
   };
 }
 
-function normalizeRaids(nextRaids) {
-  const normalized = createEmptyRaids();
+function normalizeRaidEvents(nextEvents) {
+  const usedIds = new Set();
 
-  RAID_KEYS.forEach((raidKey) => {
-    const players = Array.isArray(nextRaids?.[raidKey]) ? nextRaids[raidKey] : [];
+  return nextEvents
+    .map((event, index) => normalizeRaidEvent(event, index))
+    .filter(Boolean)
+    .map((event, index) => {
+      let id = event.id;
+      while (usedIds.has(id)) {
+        id = `${event.id}-${index + 1}`;
+      }
+      usedIds.add(id);
+      return { ...event, id };
+    });
+}
 
-    normalized[raidKey] = players
+function normalizeRaidEvent(event, index = 0) {
+  const raidKey = RAID_KEYS.includes(event?.raidKey) ? event.raidKey : "";
+  if (!raidKey) return null;
+
+  const size = normalizeRaidSize(event?.size);
+  const date = String(event?.date || "").trim();
+  const time = String(event?.time || "20:00").trim() || "20:00";
+  const players = Array.isArray(event?.players) ? event.players : [];
+  const id = String(event?.id || createRaidId(raidKey, date, time, index)).trim();
+
+  return {
+    id,
+    raidKey,
+    size,
+    date,
+    time,
+    players: players
       .map(normalizePlayer)
       .filter(Boolean)
-      .slice(0, MAX_PLAYERS_PER_RAID);
-  });
+      .slice(0, size)
+  };
+}
 
-  return normalized;
+function migrateLegacyRaids(nextState) {
+  const legacyRaids = nextState?.raids || {};
+  const legacyRaidTime = nextState?.raidTime || {};
+
+  return RAID_KEYS.flatMap((raidKey) => {
+    const players = Array.isArray(legacyRaids?.[raidKey]) ? legacyRaids[raidKey] : [];
+    const time = String(legacyRaidTime?.[raidKey]?.time || "20:00").trim() || "20:00";
+    const date = String(legacyRaidTime?.[raidKey]?.date || "").trim();
+    const shouldCreateEvent =
+      players.length > 0 ||
+      Boolean(date) ||
+      (time && time !== "20:00");
+
+    if (!shouldCreateEvent) return [];
+
+    return normalizeRaidEvent({
+      id: createRaidId(raidKey, date, time),
+      raidKey,
+      size: players.length > 10 ? 25 : 10,
+      date: date === "01-01" ? "" : date,
+      time,
+      players
+    });
+  });
 }
 
 function normalizePlayer(player) {
@@ -437,38 +600,61 @@ function normalizePlayer(player) {
   return { name, cls, spec };
 }
 
-function normalizeRaidTime(nextRaidTime) {
-  const normalized = createDefaultRaidTime();
-
-  RAID_KEYS.forEach((raidKey) => {
-    const time = String(nextRaidTime?.[raidKey]?.time || normalized[raidKey].time).trim();
-    const date = String(nextRaidTime?.[raidKey]?.date || "").trim();
-
-    normalized[raidKey] = {
-      time: time || "20:00",
-      date: date === "01-01" ? "" : date
-    };
-  });
-
-  return normalized;
+function normalizeRaidSize(size) {
+  const nextSize = Number(size);
+  return RAID_SIZES.includes(nextSize) ? nextSize : 10;
 }
 
-function createEmptyRaids() {
-  return RAID_KEYS.reduce((acc, key) => {
-    acc[key] = [];
-    return acc;
-  }, {});
+function ensureSelectedEvent() {
+  if (!raidEvents.some((event) => event.id === selectedRaidId)) {
+    selectedRaidId = raidEvents[0]?.id || null;
+  }
 }
 
-function createDefaultRaidTime() {
-  return RAID_KEYS.reduce((acc, key) => {
-    acc[key] = { time: "20:00", date: "" };
-    return acc;
-  }, {});
+function hasEvents(state) {
+  return Array.isArray(state?.raidEvents) && state.raidEvents.length > 0;
 }
 
-function hasPlayers(nextRaids) {
-  return RAID_KEYS.some((raidKey) => Array.isArray(nextRaids?.[raidKey]) && nextRaids[raidKey].length > 0);
+function getSelectedEvent() {
+  return getEventById(selectedRaidId);
+}
+
+function getEventById(id) {
+  return raidEvents.find((event) => event.id === id) || null;
+}
+
+function getRaidName(raidKey) {
+  return raidInfo[raidKey]?.name || raidKey;
+}
+
+function getRaidIcon(raidKey) {
+  return raidInfo[raidKey]?.icon || "RD";
+}
+
+function getEventLabel(event) {
+  return `${getRaidName(event.raidKey)} - ${formatRaidTime(event)} - ${event.players.length}/${event.size}`;
+}
+
+function formatRaidTime(event) {
+  const time = event?.time || "20:00";
+  const date = event?.date || "";
+
+  return `${time} - ${date ? formatDate(date) : "sem data"}`;
+}
+
+function formatDate(date) {
+  const parts = date.split("-");
+  if (parts.length !== 3) return date;
+
+  const [year, month, day] = parts;
+  return `${day}/${month}/${year}`;
+}
+
+function createRaidId(raidKey, date, time, index = Date.now()) {
+  return `${raidKey}-${date || "sem-data"}-${time || "sem-hora"}-${index}`
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, "-")
+    .replace(/-+/g, "-");
 }
 
 function normalizeName(name) {
