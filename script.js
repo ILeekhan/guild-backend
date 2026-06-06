@@ -112,6 +112,10 @@ function updateSpecs() {
 ========================= */
 
 function createRaidEvent() {
+  const raidLeader =
+    document.getElementById("raidLeaderName")
+      .value
+      .trim();
   const raidKey = document.getElementById("raidTimeSelect").value;
   const size = Number(document.getElementById("raidSizeSelect").value);
   const time = document.getElementById("raidTimeInput").value;
@@ -119,6 +123,11 @@ function createRaidEvent() {
 
   if (!time || !date) {
     alert("Informe o dia e a hora da raid.");
+    return;
+  }
+
+  if (!raidLeader) {
+    alert("Informe o nome do Raid Leader.");
     return;
   }
 
@@ -404,6 +413,7 @@ function renderSelectedRaid() {
     <span>${escapeHtml(getRaidName(event.raidKey))}</span>
   `;
   meta.innerHTML =
+    `RL: ${escapeHtml(event.raidLeader)} | ` +
     `${escapeHtml(formatRaidTime(event))} | ${event.players.length}/${event.size} | ` +
     `T:${c.t} H:${c.h} DPS:${c.d} | ${escapeHtml(status)}`;
   grid.className = `grid raid${event.size}`;
@@ -722,3 +732,13 @@ function copyRaidLink() {
 
   alert("Link copiado!");
 }
+
+const event = {
+  id: createRaidId(raidKey, date, time),
+  raidLeader,
+  raidKey,
+  size: normalizeRaidSize(size),
+  date,
+  time,
+  players: []
+};
