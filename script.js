@@ -147,14 +147,14 @@ function createRaidEvent() {
     players: []
   };
 
- raidEvents.push(event);
-selectedRaidId = event.id;
+  raidEvents.push(event);
+  selectedRaidId = event.id;
 
-alert(
-  `Raid criada!\n\nID:\n${event.id}`
-);
+  alert(
+    `Raid criada!\n\nID:\n${event.id}`
+  );
 
-sync();
+  sync();
 
 }
 
@@ -328,6 +328,7 @@ function renderAll() {
   renderEventSelect();
   renderRaidTabs();
   renderSelectedRaid();
+  updateRaidLeaderPanel();
 }
 
 function renderEventSelect() {
@@ -676,6 +677,48 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-  function getInviteLink(event) {
+function getInviteLink(event) {
   return `${window.location.origin}/?raid=${event.id}`;
+}
+
+function updateRaidLeaderPanel() {
+
+  const event = getSelectedEvent();
+
+  const idField =
+    document.getElementById("raidLeaderId");
+
+  const linkField =
+    document.getElementById("raidInviteLink");
+
+  if (!event) {
+    idField.value = "";
+    linkField.value = "";
+    return;
+  }
+
+  idField.value = event.id;
+
+  linkField.value =
+    `${window.location.origin}/?raid=${event.id}`;
+}
+
+function copyRaidId() {
+
+  const value =
+    document.getElementById("raidLeaderId").value;
+
+  navigator.clipboard.writeText(value);
+
+  alert("ID copiado!");
+}
+
+function copyRaidLink() {
+
+  const value =
+    document.getElementById("raidInviteLink").value;
+
+  navigator.clipboard.writeText(value);
+
+  alert("Link copiado!");
 }

@@ -18,10 +18,8 @@ body::before {
   inset: 0;
 
   background:
-    linear-gradient(
-      rgba(5, 8, 15, 0.72),
-      rgba(5, 8, 15, 0.85)
-    );
+    linear-gradient(rgba(5, 8, 15, 0.72),
+      rgba(5, 8, 15, 0.85));
 
   backdrop-filter: blur(2px);
 
@@ -44,7 +42,7 @@ body::before {
 }
 
 .topbar {
-  background: rgba(10,10,20,0.95);
+  background: rgba(10, 10, 20, 0.95);
   padding: 14px;
   font-size: 16px;
   font-weight: 700;
@@ -54,7 +52,7 @@ body::before {
 }
 
 .panel {
-  background: rgba(10,10,20,0.95);
+  background: rgba(10, 10, 20, 0.95);
   padding: 14px;
   display: flex;
   flex-direction: column;
@@ -63,7 +61,8 @@ body::before {
 }
 
 /* INPUTS */
-input, select {
+input,
+select {
   width: 100%;
   padding: 11px;
   background: #151622;
@@ -134,13 +133,13 @@ button:hover {
   gap: 10px;
   padding: 9px 10px;
   text-align: left;
-  background: rgba(10,10,20,0.95);
+  background: rgba(10, 10, 20, 0.95);
   border: 1px solid #2f334d;
 }
 
 .raidTab.active {
   border-color: #8ea4ff;
-  background: rgba(37,45,82,0.96);
+  background: rgba(37, 45, 82, 0.96);
 }
 
 .raidTabText {
@@ -176,20 +175,31 @@ button:hover {
   color: #fff;
   font-weight: 800;
   font-size: 13px;
-  border: 1px solid rgba(255,255,255,0.18);
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
-.raidIcon.raid-naxx { background: #345b8c; }
-.raidIcon.raid-ulduar { background: #7b6730; }
-.raidIcon.raid-toc { background: #7b3d53; }
-.raidIcon.raid-icc { background: #38436f; }
+.raidIcon.raid-naxx {
+  background: #345b8c;
+}
+
+.raidIcon.raid-ulduar {
+  background: #7b6730;
+}
+
+.raidIcon.raid-toc {
+  background: #7b3d53;
+}
+
+.raidIcon.raid-icc {
+  background: #38436f;
+}
 
 .emptyState {
   width: 100%;
   box-sizing: border-box;
   padding: 18px;
   color: #9fa8cd;
-  background: rgba(10,10,20,0.85);
+  background: rgba(10, 10, 20, 0.85);
   border: 1px dashed #34364c;
   border-radius: 4px;
   font-size: 13px;
@@ -199,7 +209,7 @@ button:hover {
 /* FRAME */
 .raidFrame {
   width: 100%;
-  background: rgba(10,10,20,0.95);
+  background: rgba(10, 10, 20, 0.95);
   border-radius: 6px;
   border: 1px solid #222;
   overflow: hidden;
@@ -210,7 +220,7 @@ button:hover {
 }
 
 .frameHeader {
-  background: rgba(20,20,35,0.95);
+  background: rgba(20, 20, 35, 0.95);
   padding: 11px 12px;
   display: flex;
   justify-content: space-between;
@@ -252,7 +262,7 @@ button:hover {
 
 /* UNIT */
 .unit {
-  background: rgba(20,20,35,0.95);
+  background: rgba(20, 20, 35, 0.95);
   border: 1px solid #222;
   padding: 10px 34px 10px 10px;
   font-size: 12px;
@@ -311,8 +321,8 @@ button:hover {
   color: #fff;
   font-size: 13px;
   font-weight: 800;
-  border: 1px solid rgba(255,255,255,0.18);
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.35);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.35);
 }
 
 /* REMOVE BUTTON MELHORADO */
@@ -335,13 +345,29 @@ button:hover {
 }
 
 /* ROLES */
-.unit.tank { border-left: 4px solid #3aa0ff; }
-.unit.dps { border-left: 4px solid #ff4b4b; }
-.unit.healer { border-left: 4px solid #3cff8f; }
+.unit.tank {
+  border-left: 4px solid #3aa0ff;
+}
 
-.roleSprite.tank { background: #2567c8; }
-.roleSprite.dps { background: #b92632; }
-.roleSprite.healer { background: #16844c; }
+.unit.dps {
+  border-left: 4px solid #ff4b4b;
+}
+
+.unit.healer {
+  border-left: 4px solid #3cff8f;
+}
+
+.roleSprite.tank {
+  background: #2567c8;
+}
+
+.roleSprite.dps {
+  background: #b92632;
+}
+
+.roleSprite.healer {
+  background: #16844c;
+}
 
 /* =======================
    MOBILE VERSION
@@ -397,8 +423,8 @@ button:hover {
 .topbar {
   backdrop-filter: blur(8px);
   text-shadow:
-    0 0 8px rgba(255,255,255,0.3),
-    0 0 15px rgba(120,180,255,0.2);
+    0 0 8px rgba(255, 255, 255, 0.3),
+    0 0 15px rgba(120, 180, 255, 0.2);
 }
 
 .panel,
@@ -416,13 +442,13 @@ button:hover {
 .raidTab:hover {
   transform: translateY(-2px);
   border-color: #9fb4ff;
-  box-shadow: 0 0 12px rgba(142,164,255,0.25);
+  box-shadow: 0 0 12px rgba(142, 164, 255, 0.25);
 }
 
 .raidFrame {
   box-shadow:
-    0 0 20px rgba(0,0,0,0.4),
-    0 0 10px rgba(120,180,255,0.05);
+    0 0 20px rgba(0, 0, 0, 0.4),
+    0 0 10px rgba(120, 180, 255, 0.05);
 }
 
 .unit {
@@ -451,7 +477,7 @@ button:hover {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(10,10,20,0.95);
+  background: rgba(10, 10, 20, 0.95);
 }
 
 ::-webkit-scrollbar-thumb {
@@ -461,4 +487,22 @@ button:hover {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #5864a8;
+}
+
+.raidLeaderPanel {
+  margin-top: 15px;
+  padding: 12px;
+  background: rgba(20, 20, 35, 0.95);
+  border: 1px solid #2f334d;
+  border-radius: 6px;
+}
+
+.raidLeaderPanel h3 {
+  margin-top: 0;
+  color: gold;
+  text-align: center;
+}
+
+.raidLeaderPanel input {
+  margin-bottom: 8px;
 }
