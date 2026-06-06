@@ -147,9 +147,15 @@ function createRaidEvent() {
     players: []
   };
 
-  raidEvents.push(event);
-  selectedRaidId = event.id;
-  sync();
+ raidEvents.push(event);
+selectedRaidId = event.id;
+
+alert(
+  `Raid criada!\n\nID:\n${event.id}`
+);
+
+sync();
+
 }
 
 function selectRaidEvent(id) {
@@ -419,13 +425,13 @@ function renderSelectedRaid() {
 
     const role =
       p.spec === "Tank" ? "tank" :
-      p.spec === "DPS" ? "dps" : "healer";
+        p.spec === "DPS" ? "dps" : "healer";
     const roleShort =
       role === "tank" ? "T" :
-      role === "healer" ? "H" : "D";
+        role === "healer" ? "H" : "D";
     const roleLabel =
       role === "tank" ? "Tank" :
-      role === "healer" ? "Heal" : "DPS";
+        role === "healer" ? "Heal" : "DPS";
 
     grid.insertAdjacentHTML(
       "beforeend",
@@ -668,4 +674,8 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+  function getInviteLink(event) {
+  return `${window.location.origin}/?raid=${event.id}`;
 }

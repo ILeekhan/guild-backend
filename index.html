@@ -1,90 +1,109 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Raid Manager ElvUI</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Raid Manager ElvUI</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<div class="app">
+  <div class="app">
 
-  <!-- LEFT PANEL -->
-  <div class="ui">
+    <!-- LEFT PANEL -->
+    <div class="ui">
 
-    <div class="topbar">⚔️ Raid Manager</div>
+      <div class="topbar">⚔️ Raid Manager</div>
 
-    <div class="panel">
+      <div class="panel">
 
-      <input id="playerName" placeholder="Nome do Player">
+        <input id="playerName" placeholder="Nome do Player">
 
-      <select id="playerClass" onchange="updateSpecs()">
-        <option>Paladino</option>
-        <option>Warrior</option>
-        <option>Cavaleiro da Morte</option>
-        <option>Rogue</option>
-        <option>Hunter</option>
-        <option>Druida</option>
-        <option>Mago</option>
-        <option>Shaman</option>
-        <option>Priest</option>
-        <option>Warlock</option>
-      </select>
+        <select id="playerClass" onchange="updateSpecs()">
+          <option>Paladino</option>
+          <option>Warrior</option>
+          <option>Cavaleiro da Morte</option>
+          <option>Rogue</option>
+          <option>Hunter</option>
+          <option>Druida</option>
+          <option>Mago</option>
+          <option>Shaman</option>
+          <option>Priest</option>
+          <option>Warlock</option>
+        </select>
 
-      <select id="playerSpec"></select>
+        <select id="playerSpec"></select>
 
-      <select id="eventSelect"></select>
+        <select id="eventSelect"></select>
 
-      <button onclick="addPlayer()">Adicionar Player</button>
-      <button class="secondaryBtn" onclick="deleteSelectedRaid()">Excluir Raid Selecionada</button>
+        <button onclick="addPlayer()">
+          Adicionar Player
+        </button>
 
-      <div class="divider"></div>
+        <button class="secondaryBtn" onclick="deleteSelectedRaid()">
+          Excluir Raid Selecionada
+        </button>
 
-      <select id="raidTimeSelect">
-        <option value="naxx">Naxxramas</option>
-        <option value="ulduar">Ulduar</option>
-        <option value="toc">ToC</option>
-        <option value="icc">ICC</option>
-      </select>
+        <div class="divider"></div>
 
-      <select id="raidSizeSelect">
-        <option value="10">Raid 10 jogadores</option>
-        <option value="25">Raid 25 jogadores</option>
-      </select>
+        <select id="raidTimeSelect">
+          <option value="naxx">Naxxramas</option>
+          <option value="ulduar">Ulduar</option>
+          <option value="toc">ToC</option>
+          <option value="icc">ICC</option>
+        </select>
 
-      <input type="time" id="raidTimeInput">
-      <input type="date" id="raidDateInput">
+        <select id="raidSizeSelect">
+          <option value="10">Raid 10 jogadores</option>
+          <option value="25">Raid 25 jogadores</option>
+        </select>
 
-      <button onclick="createRaidEvent()">Criar Raid</button>
+        <input type="time" id="raidTimeInput">
+        <input type="date" id="raidDateInput">
 
-    </div>
+        <button onclick="createRaidEvent()">
+          Criar Raid
+        </button>
 
-  </div>
-
-  <!-- RAIDS -->
-  <div class="raidContainer">
-    <div class="raidBoard">
-      <div class="raidTabs" id="raidTabs"></div>
-
-      <div class="raidFrame singleRaid" id="activeRaidFrame">
-        <div class="frameHeader">
-          <div class="frameTitle" id="activeRaidTitle"></div>
-          <span id="activeRaidMeta"></span>
-        </div>
-        <div class="grid"
-             id="activeRaidGrid"
-             ondragover="allowDrop(event)"
-             ondrop="dropPlayer(selectedRaidId)">
-        </div>
       </div>
+
     </div>
+
+    <!-- RAIDS -->
+    <div class="raidContainer">
+
+      <div class="raidBoard">
+
+        <div class="raidTabs" id="raidTabs">
+        </div>
+
+        <div class="raidFrame singleRaid" id="activeRaidFrame">
+
+          <div class="frameHeader">
+
+            <div class="frameTitle" id="activeRaidTitle">
+            </div>
+
+            <span id="activeRaidMeta"></span>
+
+          </div>
+
+          <div class="grid" id="activeRaidGrid" ondragover="allowDrop(event)" ondrop="dropPlayer(selectedRaidId)">
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
   </div>
 
-</div>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script src="script.js"></script>
 
-<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-<script src="script.js"></script>
 </body>
+
 </html>
