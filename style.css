@@ -1,17 +1,30 @@
 body {
   margin: 0;
   font-family: "Segoe UI", Arial, sans-serif;
-  background: url("https://images5.alphacoders.com/111/1112153.jpg") no-repeat center center fixed;
+
+  background-image: url("images/WoTLK.png");
+  background-position: center center;
+  background-repeat: no-repeat;
   background-size: cover;
+  background-attachment: fixed;
+
   color: #ddd;
+  min-height: 100vh;
 }
 
-/* DARK OVERLAY */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.6);
+
+  background:
+    linear-gradient(
+      rgba(5, 8, 15, 0.72),
+      rgba(5, 8, 15, 0.85)
+    );
+
+  backdrop-filter: blur(2px);
+
   z-index: -1;
 }
 
@@ -375,4 +388,77 @@ button:hover {
   .grid.raid25 {
     grid-template-columns: 1fr;
   }
+}
+
+/* =======================
+   VISUAL MMORPG
+======================= */
+
+.topbar {
+  backdrop-filter: blur(8px);
+  text-shadow:
+    0 0 8px rgba(255,255,255,0.3),
+    0 0 15px rgba(120,180,255,0.2);
+}
+
+.panel,
+.raidFrame,
+.raidTab,
+.frameHeader,
+.unit {
+  backdrop-filter: blur(8px);
+}
+
+.raidTab {
+  transition: all 0.25s ease;
+}
+
+.raidTab:hover {
+  transform: translateY(-2px);
+  border-color: #9fb4ff;
+  box-shadow: 0 0 12px rgba(142,164,255,0.25);
+}
+
+.raidFrame {
+  box-shadow:
+    0 0 20px rgba(0,0,0,0.4),
+    0 0 10px rgba(120,180,255,0.05);
+}
+
+.unit {
+  transition: 0.2s ease;
+}
+
+.unit:hover {
+  transform: scale(1.02);
+  border-color: #4b5da8;
+}
+
+.playerName {
+  font-weight: 600;
+}
+
+.removeBtn {
+  transition: 0.2s ease;
+}
+
+.removeBtn:hover {
+  transform: scale(1.1);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(10,10,20,0.95);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #3a3f66;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #5864a8;
 }
