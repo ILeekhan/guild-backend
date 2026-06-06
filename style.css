@@ -110,7 +110,8 @@ button:hover {
 /* RAIDS */
 .raidContainer {
   flex: 1;
-  max-width: 1080px;
+  max-width: 1600px;
+  width: 100%;
 }
 
 .raidBoard {
@@ -257,7 +258,7 @@ button:hover {
 }
 
 .grid.raid25 {
-  grid-template-columns: repeat(5, minmax(145px, 1fr));
+  grid-template-columns: repeat(5, minmax(220px, 1fr));
 }
 
 /* UNIT */
@@ -404,15 +405,46 @@ button:hover {
   }
 }
 
-@media (max-width: 700px) {
+@media (max-width: 768px) {
+
+  .app {
+    padding: 10px;
+  }
+
+  .ui {
+    width: 100%;
+  }
+
+  .raidContainer {
+    width: 100%;
+  }
+
   .raidTab {
     width: 100%;
     max-width: none;
   }
 
+  .playerName {
+    font-size: 15px;
+  }
+
+  .playerMeta {
+    font-size: 12px;
+  }
+
+  .frameHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
   .grid.raid10,
   .grid.raid25 {
     grid-template-columns: 1fr;
+  }
+
+  .unit {
+    min-height: 75px;
   }
 }
 
@@ -505,4 +537,27 @@ button:hover {
 
 .raidLeaderPanel input {
   margin-bottom: 8px;
+}
+
+.unit {
+  min-height: 85px;
+}
+
+.playerName {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.playerMeta {
+  font-size: 13px;
+}
+
+.frameHeader {
+  font-size: 16px;
+}
+
+.roleSprite {
+  width: 42px;
+  height: 42px;
+  font-size: 16px;
 }
