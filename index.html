@@ -19,9 +19,13 @@
 
       <div class="panel">
 
-        <input
-          id="raidLeaderName"
-          placeholder="Nome do Raid Leader">
+        <!-- RAID LEADER -->
+
+        <input id="raidLeaderName" placeholder="Nome do Raid Leader">
+
+        <!-- PLAYER -->
+
+        <input id="playerName" placeholder="Nome do Player">
 
         <select id="playerClass" onchange="updateSpecs()">
           <option>Paladino</option>
@@ -68,8 +72,6 @@
         <button onclick="createRaidEvent()">
           Criar Raid
         </button>
-
-        <!-- RAID LEADER PANEL -->
 
         <div class="divider"></div>
 
