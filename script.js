@@ -148,13 +148,14 @@ function createRaidEvent() {
   }
 
   const event = {
-    id: createRaidId(raidKey, date, time),
-    raidKey,
-    size: normalizeRaidSize(size),
-    date,
-    time,
-    players: []
-  };
+  id: createRaidId(raidKey, date, time),
+  raidLeader: raidLeader,
+  raidKey: raidKey,
+  size: normalizeRaidSize(size),
+  date: date,
+  time: time,
+  players: []
+};
 
   raidEvents.push(event);
   selectedRaidId = event.id;
@@ -732,13 +733,3 @@ function copyRaidLink() {
 
   alert("Link copiado!");
 }
-
-const event = {
-  id: createRaidId(raidKey, date, time),
-  raidLeader,
-  raidKey,
-  size: normalizeRaidSize(size),
-  date,
-  time,
-  players: []
-};
