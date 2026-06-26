@@ -26,18 +26,6 @@ Deploy pronto para plataformas como Render
 ✅ Layout responsivo adaptado a telas diferentes
 ✅ Persistência de dados das atividades
 
-Estrutura do Projeto
-plaintext
-guild-backend/
-├── server.js          # Servidor principal e rotas
-├── script.js          # Lógica e interações do frontend
-├── index.html         # Interface principal
-├── style.css          # Estilos e layout responsivo
-├── package.json       # Dependências e configurações
-├── package-lock.json
-├── images/            # Recursos visuais
-└── .gitignore
-
 ⚙️ Como Executar
 
 bash
@@ -57,5 +45,7 @@ Acesse em: http://localhost:3000
 
 📌 Finalidade
 Projeto desenvolvido para praticar desenvolvimento full-stack, lógica de servidor, integração entre front-end e back-end e organização de sistemas funcionais.
+
+
 
 Feito com 💙 por Francis Diel Fraga
