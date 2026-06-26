@@ -41,6 +41,7 @@ npm install
 
 # Iniciar servidor
 node server.js
+
 Acesse em: http://localhost:3000
 
 📌 Finalidade
