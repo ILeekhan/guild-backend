@@ -89,6 +89,6 @@ Projeto desenvolvido para praticar:
 
 <div align="center">
 
-Feito com 💙 por **Francis Diel Fraga**
+Feito com 💙 por **Leekhan**
 
 </div>
